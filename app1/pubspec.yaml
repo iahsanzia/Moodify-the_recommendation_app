@@ -1,0 +1,39 @@
+name: app1
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  camera: ^0.10.5+5
+  google_mlkit_face_detection: ^0.12.0
+  http: ^1.3.0
+  image_picker: 
+  mime: ^1.0.0
+  shared_preferences: ^2.2.0  # Store login token securely
+  flutter_secure_storage: ^8.0.0  # Secure storage for sensitive data
+  google_ml_kit:
+  http_parser:
+  image: ^4.1.3
+  url_launcher: ^6.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/logo.png
+    - assets/image.png
+    - assets/illustration.png
+    - assets/screen2.png
+    - assets/facebook.png
+    - assets/google.png
+
+    
