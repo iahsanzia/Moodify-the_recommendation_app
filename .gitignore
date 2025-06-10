@@ -1,0 +1,60 @@
+# Node.js
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+**/.env
+.env.*
+**/.env.*
+
+# Flutter/Dart
+.dart_tool/
+.packages
+.pub-cache/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.flutter-versions
+.melos_tool/
+.idea/
+*.iml
+
+# macOS
+app1/macos/Flutter/ephemeral/
+app1/macos/Pods/
+app1/macos/Podfile.lock
+app1/macos/Runner.xcworkspace/
+app1/macos/build/
+
+# iOS
+app1/ios/Flutter/ephemeral/
+app1/ios/Pods/
+app1/ios/Podfile.lock
+app1/ios/Runner.xcworkspace/
+app1/ios/build/
+
+# Android
+app1/android/.gradle/
+app1/android/.idea/
+app1/android/local.properties
+app1/android/build/
+app1/android/app/build/
+
+# Web
+app1/web/.dart_tool/
+app1/web/build/
+
+# VS Code
+.vscode/
+
+# Misc
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
