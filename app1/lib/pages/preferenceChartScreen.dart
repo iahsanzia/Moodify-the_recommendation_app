@@ -116,7 +116,7 @@ class _PreferenceChartScreenState extends State<PreferenceChartScreen> {
                   List<String> results = [];
 
                   final response = await http.post(
-                    Uri.parse('http://192.168.18.83:3000/search'),
+                    Uri.parse('http://192.168.18.83:5000/search'),
                     headers: {'Content-Type': 'application/json'},
                     body: jsonEncode({
                       'type': type.toLowerCase(),

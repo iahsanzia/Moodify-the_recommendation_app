@@ -1,17 +1,24 @@
+# DEPRECATED: All routes and logic have been moved to app.py.
+# Please use app.py as your Flask server entry point.
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
 import base64
+import os
+from dotenv import load_dotenv
+
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../backend/.env'))
 
 app = Flask(__name__)
 CORS(app)
 
 # TMDb access token
-TMDB_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2OGQ2NmY3ZDBiY2MyYTBkNWZmOWNiZTFmZGEwODYyYiIsIm5iZiI6MTc0NDgzMzcxNC43NDcsInN1YiI6IjY4MDAwY2IyZDY0NWU0MWUwOTk5N2I1OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.FvfgPI5HQTizRZGO6uYmAsar55uCXVjC9aP-_jtZqrg"
+TMDB_ACCESS_TOKEN = os.getenv("TMDB_ACCESS_TOKEN")
 
 # Spotify credentials
-SPOTIFY_CLIENT_ID = "48e6deb17519400ca5d360fcd1a7cc94"
-SPOTIFY_CLIENT_SECRET = "7326b3d2f17a4c0f99798a455f69c288"
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 SPOTIFY_ACCESS_TOKEN = None
 
 def get_spotify_token():

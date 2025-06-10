@@ -39,7 +39,7 @@ exports.getRecommendation = async (req, res) => {
       singers: prefs.singers || []
     };
 
-    const flaskRes = await axios.post('http://192.168.18.83:3000/recommendation', payload);
+    const flaskRes = await axios.post('http://192.168.18.83:5000/recommendation', payload);
     return res.json(flaskRes.data);
 
   } catch (err) {
