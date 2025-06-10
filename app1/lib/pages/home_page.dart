@@ -21,7 +21,7 @@ class _HomePageState extends State<HomePage> {
   static const Color darkPurple = Color(0xFF1E0A2E);
   static const Color purple = Color(0xFF7B1FA2);
   static const Color white = Colors.white;
-  
+
   CameraController? _cameraController;
   late List<CameraDescription> _cameras;
   CameraDescription? _camera;
@@ -64,7 +64,9 @@ class _HomePageState extends State<HomePage> {
 
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => MoodScreen(mood: mood)),
+        MaterialPageRoute(
+          builder: (context) => MoodScreen(mood: mood, email: widget.email),
+        ),
       );
     } catch (e) {
       print('Error capturing image: $e');
@@ -221,7 +223,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               SizedBox(height: 32),
-              
+
               // Camera Section
               Container(
                 padding: EdgeInsets.all(20),
@@ -241,9 +243,10 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     SizedBox(height: 16),
-                    
+
                     // Camera Preview
-                    if (_cameraController != null && _cameraController!.value.isInitialized)
+                    if (_cameraController != null &&
+                        _cameraController!.value.isInitialized)
                       Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
@@ -287,7 +290,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     SizedBox(height: 20),
-                    
+
                     // Camera Controls
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -309,7 +312,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               SizedBox(height: 32),
-              
+
               // Actions Section
               Container(
                 width: double.infinity,
@@ -330,7 +333,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     SizedBox(height: 20),
-                    
+
                     _buildActionButton(
                       icon: Icons.music_note,
                       title: 'Get Recommendations',
@@ -339,13 +342,15 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => RecommendationScreen(email: widget.email),
+                            builder:
+                                (context) =>
+                                    RecommendationScreen(email: widget.email),
                           ),
                         );
                       },
                     ),
                     SizedBox(height: 16),
-                    
+
                     _buildActionButton(
                       icon: Icons.history,
                       title: 'Mood History',
@@ -355,7 +360,7 @@ class _HomePageState extends State<HomePage> {
                       },
                     ),
                     SizedBox(height: 16),
-                    
+
                     _buildActionButton(
                       icon: Icons.settings,
                       title: 'Settings',
@@ -385,9 +390,7 @@ class _HomePageState extends State<HomePage> {
       style: ElevatedButton.styleFrom(
         backgroundColor: isPrimary ? purple : purple.withOpacity(0.3),
         foregroundColor: white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         elevation: isPrimary ? 8 : 4,
       ),
@@ -398,10 +401,7 @@ class _HomePageState extends State<HomePage> {
           SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -468,7 +468,8 @@ class _HomePageState extends State<HomePage> {
 
 class MoodScreen extends StatelessWidget {
   final String mood;
-  const MoodScreen({super.key, required this.mood});
+  final String email;
+  const MoodScreen({super.key, required this.mood, required this.email});
 
   // Color scheme matching the app
   static const Color darkPurple = Color(0xFF1E0A2E);
@@ -530,7 +531,7 @@ class MoodScreen extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 24),
-                    
+
                     Text(
                       'Your Mood',
                       style: TextStyle(
@@ -540,7 +541,7 @@ class MoodScreen extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 8),
-                    
+
                     Text(
                       mood,
                       style: TextStyle(
@@ -550,7 +551,7 @@ class MoodScreen extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 16),
-                    
+
                     Text(
                       'Great! We\'ve detected your mood. Now let\'s find perfect content for you.',
                       textAlign: TextAlign.center,
@@ -563,7 +564,7 @@ class MoodScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 40),
-              
+
               // Action Buttons
               Row(
                 children: [
@@ -592,9 +593,13 @@ class MoodScreen extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        // Navigate to recommendations
-                        Navigator.pop(context);
-                        // You could add navigation to recommendations here
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => RecommendationScreen(email: email),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: purple,
