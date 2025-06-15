@@ -58,3 +58,9 @@ Thumbs.db
 *.swp
 *.swo
 *.tmp
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/

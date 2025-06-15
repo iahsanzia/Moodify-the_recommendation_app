@@ -93,7 +93,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<String> _uploadImage(File image) async {
     final uri = Uri.parse(
-      'http://192.168.18.83:8000/mood/get-mood?email=${widget.email}',
+      'http://141.147.115.222:8000/mood/get-mood?email=${widget.email}',
     );
     var request = http.MultipartRequest('POST', uri);
 
@@ -121,7 +121,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _saveMoodToBackend(String mood) async {
-    final uri = Uri.parse('http://192.168.18.83:8000/mood/save-mood');
+    final uri = Uri.parse('http://141.147.115.222:8000/mood/save-mood');
     final body = jsonEncode({
       'email': widget.email,
       'mood': mood,

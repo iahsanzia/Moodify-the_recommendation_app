@@ -116,7 +116,7 @@ class _PreferenceChartScreenState extends State<PreferenceChartScreen> {
                   List<String> results = [];
 
                   final response = await http.post(
-                    Uri.parse('http://192.168.18.83:5000/search'),
+                    Uri.parse('http://141.147.115.222:5000/search'),
                     headers: {'Content-Type': 'application/json'},
                     body: jsonEncode({
                       'type': type.toLowerCase(),
@@ -228,7 +228,7 @@ class _PreferenceChartScreenState extends State<PreferenceChartScreen> {
     };
 
     final response = await http.post(
-      Uri.parse('http://192.168.18.83:8000/preferences/save'),
+      Uri.parse('http://141.147.115.222:8000/preferences/save'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(userData),
     );

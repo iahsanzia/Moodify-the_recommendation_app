@@ -53,7 +53,7 @@ class _SongRecommendationScreenState extends State<SongRecommendationScreen> {
   Future<void> loadSongs() async {
     try {
       final response = await http.post(
-        Uri.parse("http://192.168.18.83:8000/recommend"),
+        Uri.parse("http://141.147.115.222:8000/recommend"),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'email': widget.email}),
       );
