@@ -157,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           checkColor: Colors.black,
                         ),
                         Text(
-                          'remember me',
+                          'Remember me',
                           style: TextStyle(color: Colors.white54),
                         ),
                       ],
@@ -165,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   Spacer(),
                   Text(
-                    'forgot password',
+                    'Forgot Password?',
                     style: TextStyle(color: Colors.white54),
                   ),
                 ],
@@ -185,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           child: Text(
-                            'login',
+                            'Login',
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
@@ -218,12 +218,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       MaterialPageRoute(builder: (_) => Signup()),
                     );
                   },
-                  child: Text(
-                    "dont have an account?",
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontStyle: FontStyle.italic,
-                      decoration: TextDecoration.underline,
+                  child: RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      children: [
+                        TextSpan(text: "Don't have an account? "),
+                        TextSpan(
+                          text: "Sign Up",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

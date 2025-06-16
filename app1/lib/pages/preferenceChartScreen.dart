@@ -16,7 +16,7 @@ class _PreferenceChartScreenState extends State<PreferenceChartScreen> {
   static const Color darkPurple = Color(0xFF1E0A2E);
   static const Color purple = Color(0xFF7B1FA2);
   static const Color white = Colors.white;
-  
+
   final List<String> musicGenres = [
     'Pop',
     'Rock',
@@ -77,138 +77,267 @@ class _PreferenceChartScreenState extends State<PreferenceChartScreen> {
   List<String> favoriteDirectors = [];
   List<String> favoriteSingers = [];
 
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExistingPreferences();
+  }
+
+  Future<void> _loadExistingPreferences() async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+          'http://141.147.115.222:8000/preferences/get?email=${widget.email}',
+        ),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final preferences = data['preferences'];
+
+        if (preferences != null) {
+          setState(() {
+            // Load music genres
+            if (preferences['musicGenres'] != null) {
+              selectedMusicGenres = Set<String>.from(
+                preferences['musicGenres'],
+              );
+            }
+
+            // Load movie genres
+            if (preferences['movieGenres'] != null) {
+              selectedMovieGenres = Set<String>.from(
+                preferences['movieGenres'],
+              );
+            }
+
+            // Load mood maps
+            if (preferences['musicMoodMap'] != null) {
+              musicMoodMap = Map<String, String>.from(
+                preferences['musicMoodMap'],
+              );
+            }
+            if (preferences['movieMoodMap'] != null) {
+              movieMoodMap = Map<String, String>.from(
+                preferences['movieMoodMap'],
+              );
+            }
+
+            // Load languages
+            if (preferences['languages'] != null) {
+              selectedLanguages = List<String>.from(preferences['languages']);
+            }
+
+            // Load era
+            if (preferences['era'] != null && preferences['era'].isNotEmpty) {
+              selectedEra = preferences['era'][0];
+            }
+
+            // Load favorite people
+            if (preferences['actors'] != null) {
+              favoriteActors = List<String>.from(preferences['actors']);
+            }
+            if (preferences['actress'] != null) {
+              favoriteActress = List<String>.from(preferences['actress']);
+            }
+            if (preferences['directors'] != null) {
+              favoriteDirectors = List<String>.from(preferences['directors']);
+            }
+            if (preferences['singers'] != null) {
+              favoriteSingers = List<String>.from(preferences['singers']);
+            }
+
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading preferences: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   void showSearchDialog(String type) async {
     TextEditingController _searchController = TextEditingController();
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: darkPurple,
-        title: Text(
-          'Search $type',
-          style: TextStyle(color: white, fontWeight: FontWeight.bold),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: purple.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  style: TextStyle(color: white),
-                  decoration: InputDecoration(
-                    hintText: 'Type name...',
-                    hintStyle: TextStyle(color: white.withOpacity(0.7)),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () async {
-                  final query = _searchController.text;
-
-                  List<String> results = [];
-
-                  final response = await http.post(
-                    Uri.parse('http://141.147.115.222:5000/search'),
-                    headers: {'Content-Type': 'application/json'},
-                    body: jsonEncode({
-                      'type': type.toLowerCase(),
-                      'query': query,
-                    }),
-                  );
-
-                  final data = jsonDecode(response.body);
-                  results = List<String>.from(data['results']);
-
-                  Navigator.pop(context);
-
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: darkPurple,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: darkPurple,
+            title: Text(
+              'Search $type',
+              style: TextStyle(color: white, fontWeight: FontWeight.bold),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: purple.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    builder: (ctx) => SafeArea(
-                      child: Container(
-                        height: MediaQuery.of(ctx).size.height * 0.6,
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: white.withOpacity(0.3),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              'Select $type',
-                              style: TextStyle(
-                                color: white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 16),
-                            Expanded(
-                              child: ListView(
-                                children: results.map((name) {
-                                  return Container(
-                                    margin: EdgeInsets.only(bottom: 8),
-                                    decoration: BoxDecoration(
-                                      color: purple.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: ListTile(
-                                      title: Text(
-                                        name,
-                                        style: TextStyle(color: white),
-                                      ),
-                                      trailing: Icon(Icons.add, color: purple),
-                                      onTap: () {
-                                        setState(() {
-                                          if (type == 'Actor') favoriteActors.add(name);
-                                          if (type == 'Actress') favoriteActress.add(name);
-                                          if (type == 'Director') favoriteDirectors.add(name);
-                                          if (type == 'Singer') favoriteSingers.add(name);
-                                        });
-                                        Navigator.pop(ctx);
-                                      },
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                          ],
+                    child: TextField(
+                      controller: _searchController,
+                      style: TextStyle(color: white),
+                      decoration: InputDecoration(
+                        hintText: 'Type name...',
+                        hintStyle: TextStyle(color: white.withOpacity(0.7)),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
                         ),
                       ),
                     ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: purple,
-                  foregroundColor: white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
                   ),
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: Text('Search', style: TextStyle(fontWeight: FontWeight.bold)),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final query = _searchController.text;
+
+                      List<String> results = [];
+
+                      final response = await http.post(
+                        Uri.parse('http://141.147.115.222:5000/search'),
+                        headers: {'Content-Type': 'application/json'},
+                        body: jsonEncode({
+                          'type': type.toLowerCase(),
+                          'query': query,
+                        }),
+                      );
+
+                      final data = jsonDecode(response.body);
+                      results = List<String>.from(data['results']);
+
+                      Navigator.pop(context);
+
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: darkPurple,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(20),
+                          ),
+                        ),
+                        builder:
+                            (ctx) => SafeArea(
+                              child: Container(
+                                height: MediaQuery.of(ctx).size.height * 0.6,
+                                padding: EdgeInsets.all(16),
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      width: 40,
+                                      height: 4,
+                                      decoration: BoxDecoration(
+                                        color: white.withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
+                                    ),
+                                    SizedBox(height: 16),
+                                    Text(
+                                      'Select $type',
+                                      style: TextStyle(
+                                        color: white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 16),
+                                    Expanded(
+                                      child: ListView(
+                                        children:
+                                            results.map((name) {
+                                              return Container(
+                                                margin: EdgeInsets.only(
+                                                  bottom: 8,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: purple.withOpacity(
+                                                    0.2,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                child: ListTile(
+                                                  title: Text(
+                                                    name,
+                                                    style: TextStyle(
+                                                      color: white,
+                                                    ),
+                                                  ),
+                                                  trailing: Icon(
+                                                    Icons.add,
+                                                    color: purple,
+                                                  ),
+                                                  onTap: () {
+                                                    setState(() {
+                                                      if (type == 'Actor')
+                                                        favoriteActors.add(
+                                                          name,
+                                                        );
+                                                      if (type == 'Actress')
+                                                        favoriteActress.add(
+                                                          name,
+                                                        );
+                                                      if (type == 'Director')
+                                                        favoriteDirectors.add(
+                                                          name,
+                                                        );
+                                                      if (type == 'Singer')
+                                                        favoriteSingers.add(
+                                                          name,
+                                                        );
+                                                    });
+                                                    Navigator.pop(ctx);
+                                                  },
+                                                ),
+                                              );
+                                            }).toList(),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: purple,
+                      foregroundColor: white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: Text(
+                      'Search',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
     );
   }
 
@@ -265,129 +394,141 @@ class _PreferenceChartScreenState extends State<PreferenceChartScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome Text
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [purple.withOpacity(0.3), purple.withOpacity(0.1)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+      body:
+          _isLoading
+              ? Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(purple),
                 ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Tell us your preferences',
-                    style: TextStyle(
-                      color: white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+              )
+              : SingleChildScrollView(
+                padding: EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Welcome Text
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            purple.withOpacity(0.3),
+                            purple.withOpacity(0.1),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Tell us your preferences',
+                            style: TextStyle(
+                              color: white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Help us personalize your experience',
+                            style: TextStyle(
+                              color: white.withOpacity(0.8),
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Help us personalize your experience',
-                    style: TextStyle(
-                      color: white.withOpacity(0.8),
-                      fontSize: 16,
+                    SizedBox(height: 24),
+
+                    // Music Genres Section
+                    _buildSectionTitle('🎵 Music Genres'),
+                    SizedBox(height: 12),
+                    _buildChipSelector(musicGenres, selectedMusicGenres),
+                    SizedBox(height: 24),
+
+                    // Movie Genres Section
+                    _buildSectionTitle('🎬 Movie Genres'),
+                    SizedBox(height: 12),
+                    _buildChipSelector(movieGenres, selectedMovieGenres),
+                    SizedBox(height: 24),
+
+                    // Music Mood Mapping
+                    _buildSectionTitle('🎶 Music for your Moods'),
+                    SizedBox(height: 12),
+                    ...moods.map(
+                      (mood) =>
+                          _buildMoodDropdown(mood, musicGenres, musicMoodMap),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 24),
-            
-            // Music Genres Section
-            _buildSectionTitle('🎵 Music Genres'),
-            SizedBox(height: 12),
-            _buildChipSelector(musicGenres, selectedMusicGenres),
-            SizedBox(height: 24),
-            
-            // Movie Genres Section
-            _buildSectionTitle('🎬 Movie Genres'),
-            SizedBox(height: 12),
-            _buildChipSelector(movieGenres, selectedMovieGenres),
-            SizedBox(height: 24),
-            
-            // Music Mood Mapping
-            _buildSectionTitle('🎶 Music for your Moods'),
-            SizedBox(height: 12),
-            ...moods.map((mood) => _buildMoodDropdown(mood, musicGenres, musicMoodMap)),
-            SizedBox(height: 24),
-            
-            // Movie Mood Mapping
-            _buildSectionTitle('🍿 Movies for your Moods'),
-            SizedBox(height: 12),
-            ...moods.map((mood) => _buildMoodDropdown(mood, movieGenres, movieMoodMap)),
-            SizedBox(height: 24),
-            
-            // Languages Section
-            _buildSectionTitle('🌍 Preferred Languages'),
-            SizedBox(height: 12),
-            _buildLanguageSelector(),
-            SizedBox(height: 24),
-            
-            // Era Section
-            _buildSectionTitle('📅 Preferred Era'),
-            SizedBox(height: 12),
-            _buildEraDropdown(),
-            SizedBox(height: 24),
-            
-            // Favorites Section
-            _buildSectionTitle('⭐ Add Your Favorites'),
-            SizedBox(height: 12),
-            _buildFavoritesSection(),
-            SizedBox(height: 16),
-            _buildSelectedFavorites(),
-            SizedBox(height: 32),
-            
-            // Submit Button
-            Container(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: submitPreferences,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: purple,
-                  foregroundColor: white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 8,
-                ),
-                child: Text(
-                  'Submit Preferences',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                    SizedBox(height: 24),
+
+                    // Movie Mood Mapping
+                    _buildSectionTitle('🍿 Movies for your Moods'),
+                    SizedBox(height: 12),
+                    ...moods.map(
+                      (mood) =>
+                          _buildMoodDropdown(mood, movieGenres, movieMoodMap),
+                    ),
+                    SizedBox(height: 24),
+
+                    // Languages Section
+                    _buildSectionTitle('🌍 Preferred Languages'),
+                    SizedBox(height: 12),
+                    _buildLanguageSelector(),
+                    SizedBox(height: 24),
+
+                    // Era Section
+                    _buildSectionTitle('📅 Preferred Era'),
+                    SizedBox(height: 12),
+                    _buildEraDropdown(),
+                    SizedBox(height: 24),
+
+                    // Favorites Section
+                    _buildSectionTitle('⭐ Add Your Favorites'),
+                    SizedBox(height: 12),
+                    _buildFavoritesSection(),
+                    SizedBox(height: 16),
+                    _buildSelectedFavorites(),
+                    SizedBox(height: 32),
+
+                    // Submit Button
+                    Container(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: submitPreferences,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: purple,
+                          foregroundColor: white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 8,
+                        ),
+                        child: Text(
+                          'Submit Preferences',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                  ],
                 ),
               ),
-            ),
-            SizedBox(height: 20),
-          ],
-        ),
-      ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: TextStyle(
-        color: white,
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-      ),
+      style: TextStyle(color: white, fontSize: 20, fontWeight: FontWeight.bold),
     );
   }
 
@@ -395,38 +536,46 @@ class _PreferenceChartScreenState extends State<PreferenceChartScreen> {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: items.map((item) {
-        final isSelected = selectedItems.contains(item);
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              isSelected ? selectedItems.remove(item) : selectedItems.add(item);
-            });
-          },
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isSelected ? purple : purple.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isSelected ? purple : purple.withOpacity(0.5),
-                width: 1,
+      children:
+          items.map((item) {
+            final isSelected = selectedItems.contains(item);
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  isSelected
+                      ? selectedItems.remove(item)
+                      : selectedItems.add(item);
+                });
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? purple : purple.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected ? purple : purple.withOpacity(0.5),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  item,
+                  style: TextStyle(
+                    color: white,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
               ),
-            ),
-            child: Text(
-              item,
-              style: TextStyle(
-                color: white,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
+            );
+          }).toList(),
     );
   }
 
-  Widget _buildMoodDropdown(String mood, List<String> genres, Map<String, String> moodMap) {
+  Widget _buildMoodDropdown(
+    String mood,
+    List<String> genres,
+    Map<String, String> moodMap,
+  ) {
     return Container(
       margin: EdgeInsets.only(bottom: 12),
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -443,10 +592,15 @@ class _PreferenceChartScreenState extends State<PreferenceChartScreen> {
         ),
         dropdownColor: darkPurple,
         style: TextStyle(color: white),
-        items: genres.map((g) => DropdownMenuItem(
-          value: g,
-          child: Text(g, style: TextStyle(color: white)),
-        )).toList(),
+        items:
+            genres
+                .map(
+                  (g) => DropdownMenuItem(
+                    value: g,
+                    child: Text(g, style: TextStyle(color: white)),
+                  ),
+                )
+                .toList(),
         onChanged: (val) => setState(() => moodMap[mood] = val ?? ''),
       ),
     );
@@ -456,34 +610,38 @@ class _PreferenceChartScreenState extends State<PreferenceChartScreen> {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: languages.map((lang) {
-        final isSelected = selectedLanguages.contains(lang);
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              isSelected ? selectedLanguages.remove(lang) : selectedLanguages.add(lang);
-            });
-          },
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isSelected ? purple : purple.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isSelected ? purple : purple.withOpacity(0.5),
-                width: 1,
+      children:
+          languages.map((lang) {
+            final isSelected = selectedLanguages.contains(lang);
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  isSelected
+                      ? selectedLanguages.remove(lang)
+                      : selectedLanguages.add(lang);
+                });
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? purple : purple.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected ? purple : purple.withOpacity(0.5),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  lang,
+                  style: TextStyle(
+                    color: white,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
               ),
-            ),
-            child: Text(
-              lang,
-              style: TextStyle(
-                color: white,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
+            );
+          }).toList(),
     );
   }
 
@@ -503,10 +661,15 @@ class _PreferenceChartScreenState extends State<PreferenceChartScreen> {
         ),
         dropdownColor: darkPurple,
         style: TextStyle(color: white),
-        items: musicEras.map((era) => DropdownMenuItem(
-          value: era,
-          child: Text(era, style: TextStyle(color: white)),
-        )).toList(),
+        items:
+            musicEras
+                .map(
+                  (era) => DropdownMenuItem(
+                    value: era,
+                    child: Text(era, style: TextStyle(color: white)),
+                  ),
+                )
+                .toList(),
         onChanged: (val) => setState(() => selectedEra = val),
       ),
     );
@@ -531,16 +694,11 @@ class _PreferenceChartScreenState extends State<PreferenceChartScreen> {
       style: ElevatedButton.styleFrom(
         backgroundColor: purple.withOpacity(0.3),
         foregroundColor: white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         side: BorderSide(color: purple.withOpacity(0.5)),
       ),
-      child: Text(
-        label,
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
+      child: Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
     );
   }
 
@@ -548,10 +706,14 @@ class _PreferenceChartScreenState extends State<PreferenceChartScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (favoriteActors.isNotEmpty) _buildFavoritesList('👨‍🎭 Actors', favoriteActors),
-        if (favoriteActress.isNotEmpty) _buildFavoritesList('👩‍🎭 Actresses', favoriteActress),
-        if (favoriteDirectors.isNotEmpty) _buildFavoritesList('🎬 Directors', favoriteDirectors),
-        if (favoriteSingers.isNotEmpty) _buildFavoritesList('🎤 Singers', favoriteSingers),
+        if (favoriteActors.isNotEmpty)
+          _buildFavoritesList('👨‍🎭 Actors', favoriteActors),
+        if (favoriteActress.isNotEmpty)
+          _buildFavoritesList('👩‍🎭 Actresses', favoriteActress),
+        if (favoriteDirectors.isNotEmpty)
+          _buildFavoritesList('🎬 Directors', favoriteDirectors),
+        if (favoriteSingers.isNotEmpty)
+          _buildFavoritesList('🎤 Singers', favoriteSingers),
       ],
     );
   }
@@ -580,17 +742,25 @@ class _PreferenceChartScreenState extends State<PreferenceChartScreen> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: items.map((item) => Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: purple.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                item,
-                style: TextStyle(color: white, fontSize: 14),
-              ),
-            )).toList(),
+            children:
+                items
+                    .map(
+                      (item) => Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: purple.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          item,
+                          style: TextStyle(color: white, fontSize: 14),
+                        ),
+                      ),
+                    )
+                    .toList(),
           ),
         ],
       ),

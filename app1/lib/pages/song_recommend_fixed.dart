@@ -125,250 +125,416 @@ class _SongRecommendationScreenState extends State<SongRecommendationScreen> {
     });
   }
 
+  void _showSnackBar(String message, IconData icon) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(icon, color: white),
+            SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: purple,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
   void _showSongDetails(Song song) {
     showDialog(
       context: context,
+      barrierColor: Colors.black.withOpacity(0.8),
       builder: (BuildContext context) {
         return Dialog(
           backgroundColor: Colors.transparent,
           child: Container(
-            padding: EdgeInsets.all(20),
+            margin: EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: darkPurple,
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: purple.withOpacity(0.3), width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: purple.withOpacity(0.3),
+                  blurRadius: 20,
+                  spreadRadius: 5,
+                ),
+              ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      '🎵 Song Details',
-                      style: TextStyle(
-                        color: white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.close, color: white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 20),
-
-                // Album Art
-                Container(
-                  width: 150,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    image:
-                        song.image.isNotEmpty
-                            ? DecorationImage(
-                              image: NetworkImage(song.image),
-                              fit: BoxFit.cover,
-                            )
-                            : null,
-                    color: song.image.isEmpty ? purple.withOpacity(0.3) : null,
-                  ),
-                  child:
-                      song.image.isEmpty
-                          ? Center(
-                            child: Icon(
-                              Icons.music_note,
-                              color: white,
-                              size: 60,
-                            ),
-                          )
-                          : null,
-                ),
-                SizedBox(height: 20),
-
-                // Song Information
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: purple.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: purple.withOpacity(0.3)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.music_note, color: purple, size: 20),
-                          SizedBox(width: 8),
-                          Text(
-                            'Song Title',
-                            style: TextStyle(
-                              color: white.withOpacity(0.7),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
+                    // Close Button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Song Details',
+                          style: TextStyle(
+                            color: white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
                           ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        song.name,
-                        style: TextStyle(
-                          color: white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
                         ),
-                      ),
-                      SizedBox(height: 16),
-
-                      Row(
-                        children: [
-                          Icon(Icons.person, color: purple, size: 20),
-                          SizedBox(width: 8),
-                          Text(
-                            'Artist',
-                            style: TextStyle(
-                              color: white.withOpacity(0.7),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        song.artist,
-                        style: TextStyle(
-                          color: white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-
-                      if (song.url.isNotEmpty) ...[
-                        SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Icon(Icons.link, color: purple, size: 20),
-                            SizedBox(width: 8),
-                            Text(
-                              'Listen on Spotify',
-                              style: TextStyle(
-                                color: white.withOpacity(0.7),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 8),
-                        GestureDetector(
-                          onTap: () async {
-                            try {
-                              print('🎵 Attempting to launch URL: ${song.url}');
-
-                              // Validate URL format
-                              if (song.url.isEmpty) {
-                                _showSnackBar(
-                                  'No URL available for this song',
-                                  Icons.error,
-                                );
-                                return;
-                              }
-
-                              final uri = Uri.parse(song.url);
-                              print('🎵 Parsed URI: $uri');
-
-                              // Try to launch the URL with external application
-                              bool launched = await launchUrl(
-                                uri,
-                                mode: LaunchMode.externalApplication,
-                              );
-
-                              if (launched) {
-                                print('🎵 URL launched successfully');
-                                _showSnackBar(
-                                  'Opening in Spotify...',
-                                  Icons.open_in_new,
-                                );
-                              } else {
-                                print('🎵 Failed to launch URL');
-                                _showSnackBar(
-                                  'Could not open Spotify link',
-                                  Icons.error,
-                                );
-                              }
-                            } catch (e) {
-                              print('🎵 Error launching URL: $e');
-                              _showSnackBar(
-                                'Error opening link: $e',
-                                Icons.error,
-                              );
-                            }
-                          },
-                          child: Container(
-                            padding: EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: purple.withOpacity(0.2),
+                        IconButton(
+                          icon: Icon(Icons.close, color: white),
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: IconButton.styleFrom(
+                            backgroundColor: purple.withOpacity(0.2),
+                            shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: purple.withOpacity(0.5),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.open_in_new,
-                                  color: purple,
-                                  size: 16,
-                                ),
-                                SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    song.url,
-                                    style: TextStyle(
-                                      color: purple,
-                                      fontSize: 14,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
                         ),
                       ],
-                    ],
-                  ),
-                ),
-                SizedBox(height: 20), // Action Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      _addToLiked(song);
-                      Navigator.pop(context);
-                    },
-                    icon: Icon(Icons.favorite, size: 20),
-                    label: Text('Add to Liked Songs'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.withOpacity(0.8),
-                      foregroundColor: white,
-                      padding: EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    ),
+                    SizedBox(height: 20),
+
+                    // Album Art
+                    Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: purple.withOpacity(0.3),
+                            blurRadius: 15,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child:
+                            song.image.isNotEmpty
+                                ? Image.network(
+                                  song.image,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: purple.withOpacity(0.3),
+                                      child: Center(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.music_note,
+                                              color: white,
+                                              size: 60,
+                                            ),
+                                            SizedBox(height: 8),
+                                            Text(
+                                              'No Image',
+                                              style: TextStyle(
+                                                color: white,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
+                                : Container(
+                                  color: purple.withOpacity(0.3),
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.music_note,
+                                          color: white,
+                                          size: 60,
+                                        ),
+                                        SizedBox(height: 8),
+                                        Text(
+                                          'No Image',
+                                          style: TextStyle(
+                                            color: white,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                       ),
                     ),
-                  ),
+                    SizedBox(height: 24),
+
+                    // Song Information
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: purple.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: purple.withOpacity(0.3)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Song Name
+                          Row(
+                            children: [
+                              Icon(Icons.music_note, color: purple, size: 20),
+                              SizedBox(width: 8),
+                              Text(
+                                'Song Title',
+                                style: TextStyle(
+                                  color: white.withOpacity(0.7),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            song.name,
+                            style: TextStyle(
+                              color: white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 16),
+
+                          // Artist Name
+                          Row(
+                            children: [
+                              Icon(Icons.person, color: purple, size: 20),
+                              SizedBox(width: 8),
+                              Text(
+                                'Artist',
+                                style: TextStyle(
+                                  color: white.withOpacity(0.7),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            song.artist,
+                            style: TextStyle(
+                              color: white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(height: 16),
+
+                          // URL Information
+                          if (song.url.isNotEmpty) ...[
+                            Row(
+                              children: [
+                                Icon(Icons.link, color: purple, size: 20),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Streaming Link',
+                                  style: TextStyle(
+                                    color: white.withOpacity(0.7),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            GestureDetector(
+                              onTap: () async {
+                                final Uri uri = Uri.parse(song.url);
+                                try {
+                                  if (await canLaunchUrl(uri)) {
+                                    await launchUrl(
+                                      uri,
+                                      mode: LaunchMode.externalApplication,
+                                    );
+                                    _showSnackBar(
+                                      'Opening "${song.name}"...',
+                                      Icons.open_in_new,
+                                    );
+                                  } else {
+                                    _showSnackBar(
+                                      'Could not open song link',
+                                      Icons.error,
+                                    );
+                                  }
+                                } catch (e) {
+                                  _showSnackBar(
+                                    'Error opening song link',
+                                    Icons.error,
+                                  );
+                                }
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: purple.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: purple.withOpacity(0.3),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.open_in_new,
+                                      color: purple,
+                                      size: 16,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        song.url.length > 40
+                                            ? '${song.url.substring(0, 40)}...'
+                                            : song.url,
+                                        style: TextStyle(
+                                          color: purple,
+                                          fontSize: 14,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ] else ...[
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.link_off,
+                                  color: white.withOpacity(0.5),
+                                  size: 20,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'No streaming link available',
+                                  style: TextStyle(
+                                    color: white.withOpacity(0.5),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 24),
+
+                    // Action Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              _addToLiked(song);
+                              Navigator.of(context).pop();
+                            },
+                            icon: Icon(
+                              likedSongs.any(
+                                    (s) =>
+                                        s.name == song.name &&
+                                        s.artist == song.artist,
+                                  )
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: white,
+                            ),
+                            label: Text(
+                              likedSongs.any(
+                                    (s) =>
+                                        s.name == song.name &&
+                                        s.artist == song.artist,
+                                  )
+                                  ? 'Liked'
+                                  : 'Like',
+                              style: TextStyle(
+                                color: white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  likedSongs.any(
+                                        (s) =>
+                                            s.name == song.name &&
+                                            s.artist == song.artist,
+                                      )
+                                      ? Colors.red.withOpacity(0.8)
+                                      : purple.withOpacity(0.3),
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        if (song.url.isNotEmpty)
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                final Uri uri = Uri.parse(song.url);
+                                try {
+                                  if (await canLaunchUrl(uri)) {
+                                    await launchUrl(
+                                      uri,
+                                      mode: LaunchMode.externalApplication,
+                                    );
+                                    Navigator.of(context).pop();
+                                    _showSnackBar(
+                                      'Opening "${song.name}"...',
+                                      Icons.play_arrow,
+                                    );
+                                  } else {
+                                    _showSnackBar(
+                                      'Could not open song link',
+                                      Icons.error,
+                                    );
+                                  }
+                                } catch (e) {
+                                  _showSnackBar(
+                                    'Error opening song link',
+                                    Icons.error,
+                                  );
+                                }
+                              },
+                              icon: Icon(Icons.play_arrow, color: white),
+                              label: Text(
+                                'Play',
+                                style: TextStyle(
+                                  color: white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: purple,
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );
@@ -753,23 +919,6 @@ class _SongRecommendationScreenState extends State<SongRecommendationScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _showSnackBar(String message, IconData icon) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(icon, color: white),
-            SizedBox(width: 8),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: purple,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

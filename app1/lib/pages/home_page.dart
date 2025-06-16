@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:app1/pages/recommend.dart';
 import 'package:app1/pages/song_recommend.dart';
+import 'package:app1/pages/preferenceChartScreen.dart';
+import 'package:app1/pages/mood_history.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:http/http.dart' as http;
@@ -58,9 +60,12 @@ class _HomePageState extends State<HomePage> {
       if (_camera?.lensDirection == CameraLensDirection.front) {
         fixedImage = await _flipImageHorizontally(File(image.path));
       }
-
       String mood = await _uploadImage(fixedImage);
-      await _saveMoodToBackend(mood);
+
+      // Only save mood to backend if it's not a failure message
+      if (!mood.contains('Failed to detect mood') && !mood.contains('Error:')) {
+        await _saveMoodToBackend(mood);
+      }
 
       Navigator.push(
         context,
@@ -164,7 +169,15 @@ class _HomePageState extends State<HomePage> {
         ),
         leading: IconButton(
           icon: Icon(Icons.person_outline, color: white),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) => PreferenceChartScreen(email: widget.email),
+              ),
+            );
+          },
         ),
         actions: [
           Container(
@@ -350,23 +363,19 @@ class _HomePageState extends State<HomePage> {
                       },
                     ),
                     SizedBox(height: 16),
-
                     _buildActionButton(
                       icon: Icons.history,
                       title: 'Mood History',
                       subtitle: 'View your past mood detections',
                       onPressed: () {
-                        // TODO: Navigate to mood history
-                      },
-                    ),
-                    SizedBox(height: 16),
-
-                    _buildActionButton(
-                      icon: Icons.settings,
-                      title: 'Settings',
-                      subtitle: 'Customize your preferences',
-                      onPressed: () {
-                        // TODO: Navigate to settings
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) =>
+                                    MoodHistoryScreen(email: widget.email),
+                          ),
+                        );
                       },
                     ),
                   ],

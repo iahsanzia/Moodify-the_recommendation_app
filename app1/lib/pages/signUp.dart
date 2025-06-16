@@ -260,12 +260,22 @@ class _SignupState extends State<Signup> {
                       MaterialPageRoute(builder: (_) => LoginScreen()),
                     );
                   },
-                  child: Text(
-                    "already have a account?",
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontStyle: FontStyle.italic,
-                      decoration: TextDecoration.underline,
+                  child: RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      children: [
+                        TextSpan(text: "Already have an account? "),
+                        TextSpan(
+                          text: "Login",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
