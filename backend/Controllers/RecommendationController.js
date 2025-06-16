@@ -18,14 +18,20 @@ exports.getRecommendation = async (req, res) => {
   const { email } = req.body;
 
   try {
+    console.log('🎬 Getting recommendations for email:', email);
+    
     const user = await User.findOne({ email });
     if (!user || !user.preferences) {
+      console.log('❌ User not found or no preferences set for:', email);
       return res.status(404).json({ error: 'User not found or no preferences set.' });
     }
 
     const prefs = user.preferences;
     const recentMood = user.moodHistory?.slice(-1)[0] || 'Happy';
     const normalizedMood = normalizeMood(recentMood);
+
+    console.log('🎭 User preferences:', prefs);
+    console.log('😊 Recent mood:', recentMood, '-> normalized:', normalizedMood);
 
     const payload = {
       mood: normalizedMood,
@@ -39,11 +45,17 @@ exports.getRecommendation = async (req, res) => {
       singers: prefs.singers || []
     };
 
+    console.log('🚀 Sending payload to Flask:', payload);
+    
     const flaskRes = await axios.post('http://141.147.115.222:5000/recommendation', payload);
+    console.log('✅ Flask response received:', flaskRes.data);
     return res.json(flaskRes.data);
 
   } catch (err) {
-    console.error('RecommendationController error:', err.message);
-    return res.status(500).json({ error: 'Failed to get recommendations.' });
+    console.error('❌ RecommendationController error:', err.message);
+    if (err.response) {
+      console.error('❌ Flask API error response:', err.response.status, err.response.data);
+    }
+    return res.status(500).json({ error: 'Failed to get recommendations.', details: err.message });
   }
 };
